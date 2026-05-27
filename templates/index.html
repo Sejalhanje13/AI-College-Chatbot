@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Assistant AI - Professional Edition v2.0</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-content">
+                <div class="bot-avatar"></div>
+                <div class="header-text">
+                    <h2>College Assistant AI <span class="version-badge">v2.0</span></h2>
+                    <p class="status">
+                        <span class="status-dot"></span> Online • 
+                        <span id="messageCount">0</span> messages • 
+                        <span id="confidenceDisplay">AI Ready</span>
+                    </p>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                    <button class="icon-btn" onclick="exportChat()" title="Export Chat">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="icon-btn" onclick="clearChat()" title="Clear Chat">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button class="icon-btn" onclick="toggleVoice()" title="Voice Input">
+                        <i class="fas fa-microphone" id="voiceIcon"></i>
+                    </button>
+                    <button class="icon-btn" onclick="showAnalytics()" title="Analytics Dashboard">
+                        <i class="fas fa-chart-line"></i>
+                    </button>
+                    <button class="icon-btn" onclick="showFeedback()" title="Give Feedback">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button class="icon-btn" onclick="showQuiz()" title="Take Quiz">
+                        <i class="fas fa-graduation-cap"></i>
+                    </button>
+                    <button class="icon-btn" onclick="showBadges()" title="Your Badges">
+                        <i class="fas fa-trophy"></i>
+                    </button>
+                    <button class="icon-btn" onclick="showBookmarks()" title="Bookmarks">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Welcome message -->
+            <div class="message bot-message fade-in" data-time="">
+                <div class="message-content">
+                    <p>🤖 Hello! I'm your AI-Powered College Assistant with advanced features !
+
+Ask me anything about admissions, courses, fees, placements, and more!</p>
+                </div>
+                <span class="timestamp"></span>
+            </div>
+            
+            <!-- Quick reply buttons -->
+            <div class="quick-replies" id="quickReplies">
+                <button class="quick-btn" onclick="sendQuickReply('Tell me about admissions')"> Admissions</button>
+                <button class="quick-btn" onclick="sendQuickReply('What is the fee structure?')"> Fees</button>
+                <button class="quick-btn" onclick="sendQuickReply('Exam schedule and pattern')"> Exams</button>
+                <button class="quick-btn" onclick="sendQuickReply('Class timetable')"> Timetable</button>
+                <button class="quick-btn" onclick="sendQuickReply('Placement information')"> Placements</button>
+                <button class="quick-btn" onclick="sendQuickReply('Hostel facilities')"> Hostel</button>
+                <button class="quick-btn" onclick="sendQuickReply('Library facilities')"> Library</button>
+                <button class="quick-btn" onclick="sendQuickReply('Sports facilities')"> Sports</button>
+                <button class="quick-btn" onclick="sendQuickReply('Faculty information')"> Faculty</button>
+                <button class="quick-btn" onclick="sendQuickReply('Courses offered')"> Courses</button>
+                <button class="quick-btn" onclick="sendQuickReply('Scholarship programs')"> Scholarships</button>
+                <button class="quick-btn" onclick="sendQuickReply('Campus infrastructure')"> Infrastructure</button>
+                <button class="quick-btn" onclick="sendQuickReply('Extracurricular activities')"> Activities</button>
+                <button class="quick-btn" onclick="sendQuickReply('Internship opportunities')"> Internships</button>
+                <button class="quick-btn" onclick="sendQuickReply('Alumni network')"> Alumni</button>
+                <button class="quick-btn" onclick="sendQuickReply('Contact information')"> Contact</button>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <button class="icon-btn" onclick="toggleVoice()" title="Voice Input">
+                <i class="fas fa-microphone" id="voiceBtn"></i>
+            </button>
+            <input type="text" id="userInput" placeholder="Type your question here... (or use voice)" />
+            <button class="icon-btn" onclick="searchHistory()" title="Search History">
+                <i class="fas fa-search"></i>
+            </button>
+            <button id="sendBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSearch()">&times;</span>
+            <h2>🔍 Search Chat History</h2>
+            <input type="text" id="searchInput" placeholder="Search messages..." onkeyup="performSearch()">
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- Analytics Dashboard Modal -->
+    <div id="analyticsModal" class="modal">
+        <div class="modal-content analytics-modal">
+            <span class="close" onclick="closeAnalytics()">&times;</span>
+            <h2>📊 Analytics Dashboard</h2>
+            <div id="analyticsContent" class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="card-icon">💬</div>
+                    <div class="card-value" id="totalQueries">0</div>
+                    <div class="card-label">Total Queries</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-value" id="avgResponseTime">0ms</div>
+                    <div class="card-label">Avg Response Time</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="card-icon">😊</div>
+                    <div class="card-value" id="satisfactionRate">0%</div>
+                    <div class="card-label">Satisfaction Rate</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="card-icon">🔥</div>
+                    <div class="card-value" id="popularTopic">-</div>
+                    <div class="card-label">Most Popular Topic</div>
+                </div>
+            </div>
+            <div class="sentiment-chart">
+                <h3>Sentiment Analysis</h3>
+                <div id="sentimentBars"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFeedback()">&times;</span>
+            <h2>⭐ Rate Your Experience</h2>
+            <div class="rating-stars">
+                <span class="star" onclick="setRating(1)">★</span>
+                <span class="star" onclick="setRating(2)">★</span>
+                <span class="star" onclick="setRating(3)">★</span>
+                <span class="star" onclick="setRating(4)">★</span>
+                <span class="star" onclick="setRating(5)">★</span>
+            </div>
+            <textarea id="feedbackComment" placeholder="Tell us more about your experience (optional)..." rows="4"></textarea>
+            <button class="submit-btn" onclick="submitFeedback()">Submit Feedback</button>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="modal">
+        <div class="modal-content quiz-modal">
+            <span class="close" onclick="closeQuiz()">&times;</span>
+            <h2>🎓 College Knowledge Quiz</h2>
+            <div id="quizContent"></div>
+            <button class="submit-btn" id="submitQuizBtn" onclick="submitQuiz()" style="display:none;">Submit Quiz</button>
+            <div id="quizResults" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Badges Modal -->
+    <div id="badgesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBadges()">&times;</span>
+            <h2>🏆 Your Achievements</h2>
+            <div id="badgesContent" class="badges-grid"></div>
+        </div>
+    </div>
+
+    <!-- Bookmarks Modal -->
+    <div id="bookmarksModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBookmarks()">&times;</span>
+            <h2>📌 Your Bookmarks</h2>
+            <div id="bookmarksContent"></div>
+        </div>
+    </div>
+
+    <!-- Related Questions Panel -->
+    <div id="relatedQuestions" class="related-panel" style="display:none;">
+        <div class="related-header">
+            <h4>💡 Related Questions:</h4>
+            <button class="close-related" onclick="closeRelatedQuestions()">&times;</button>
+        </div>
+        <div id="relatedQuestionsContent"></div>
+    </div>
+
+    <!-- Badge Notification -->
+    <div id="badgeNotification" class="badge-notification" style="display:none;">
+        <div class="badge-content">
+            <span class="badge-icon"></span>
+            <div class="badge-text">
+                <strong class="badge-name"></strong>
+                <p class="badge-desc"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        let isTyping = false;
+        let messageCount = 0;
+        let chatHistory = [];
+        let recognition = null;
+        let isListening = false;
+        let currentRating = 0;
+        let autoSuggestTimeout = null;
+        let quizQuestions = [];
+        let quizAnswers = [];
+        let earnedBadges = [];
+
+        // Initialize Speech Recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                isListening = false;
+                updateVoiceIcon();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                isListening = false;
+                updateVoiceIcon();
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                updateVoiceIcon();
+            };
+        }
+
+        // Load saved theme and chat history
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+            }
+            
+            const saved = localStorage.getItem('chatHistory');
+            if (saved) {
+                chatHistory = JSON.parse(saved);
+            }
+            
+            updateMessageCount();
+        };
+
+        // Get current timestamp
+        function getTimestamp() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Add message with timestamp
+        function addMessage(message, isUser, animate = true) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'} ${animate ? 'fade-in' : ''}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = `<p>${message}</p>`;
+            
+            const timestamp = document.createElement('span');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = getTimestamp();
+            
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timestamp);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Save to history
+            chatHistory.push({
+                message: message,
+                isUser: isUser,
+                timestamp: getTimestamp(),
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            
+            messageCount++;
+            updateMessageCount();
+        }
+
+        // Update message count
+        function updateMessageCount() {
+            document.getElementById('messageCount').textContent = messageCount;
+        }
+
+        // Show typing indicator
+        function showTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot-message typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Remove typing indicator
+        function removeTyping() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Send message
+        async function sendMessage(messageText = null) {
+            const message = messageText || userInput.value.trim();
+            
+            if (message === '' || isTyping) return;
+            
+            addMessage(message, true);
+            userInput.value = '';
+            
+            // Hide quick replies after first message
+            const quickReplies = document.getElementById('quickReplies');
+            if (quickReplies && messageCount > 3) {
+                quickReplies.style.display = 'none';
+            }
+            
+            isTyping = true;
+            showTyping();
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                removeTyping();
+                isTyping = false;
+                
+                if (data.error) {
+                    addMessage('⚠️ Error: ' + data.error, false);
+                } else {
+                    addMessage(data.reply, false);
+                    
+                    // Update confidence display
+                    if (data.analytics && data.analytics.confidence) {
+                        const confidence = (data.analytics.confidence * 100).toFixed(0);
+                        document.getElementById('confidenceDisplay').textContent = `AI Confidence: ${confidence}%`;
+                    }
+                    
+                    // Show related questions
+                    if (data.related_questions && data.related_questions.length > 0) {
+                        showRelatedQuestions(data.related_questions);
+                    }
+                    
+                    // Check for new badges
+                    if (data.badges && data.badges.length > earnedBadges.length) {
+                        const newBadges = data.badges.filter(b => 
+                            !earnedBadges.some(eb => eb.name === b.name)
+                        );
+                        newBadges.forEach(badge => showBadgeNotification(badge));
+                        earnedBadges = data.badges;
+                    }
+                }
+            } catch (error) {
+                removeTyping();
+                isTyping = false;
+                addMessage(' Error connecting to server', false);
+            }
+        }
+
+        // Quick reply
+        function sendQuickReply(message) {
+            sendMessage(message);
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.getElementById('themeIcon');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Export chat
+        function exportChat() {
+            if (chatHistory.length === 0) {
+                alert('No chat history to export!');
+                return;
+            }
+            
+            let exportText = '=== College Assistant AI - Chat Export ===\n';
+            exportText += 'Exported on: ' + new Date().toLocaleString() + '\n';
+            exportText += '=' .repeat(50) + '\n\n';
+            
+            chatHistory.forEach(item => {
+                const sender = item.isUser ? 'You' : 'Bot';
+                exportText += `[${item.timestamp}] ${sender}:\n${item.message}\n\n`;
+            });
+            
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-export-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Clear chat
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                chatHistory = [];
+                localStorage.removeItem('chatHistory');
+                messageCount = 0;
+                updateMessageCount();
+                location.reload();
+            }
+        }
+
+        // Toggle voice input
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+            } else {
+                recognition.start();
+                isListening = true;
+            }
+            updateVoiceIcon();
+        }
+
+        // Update voice icon
+        function updateVoiceIcon() {
+            const icon = document.getElementById('voiceIcon');
+            const btnIcon = document.getElementById('voiceBtn');
+            if (isListening) {
+                icon.className = 'fas fa-microphone-slash';
+                icon.style.color = '#e74c3c';
+                btnIcon.className = 'fas fa-microphone-slash';
+                btnIcon.style.color = '#e74c3c';
+            } else {
+                icon.className = 'fas fa-microphone';
+                icon.style.color = '';
+                btnIcon.className = 'fas fa-microphone';
+                btnIcon.style.color = '';
+            }
+        }
+
+        // Search history
+        function searchHistory() {
+            document.getElementById('searchModal').style.display = 'block';
+        }
+
+        // Close search
+        function closeSearch() {
+            document.getElementById('searchModal').style.display = 'none';
+        }
+
+        // Perform search
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const results = document.getElementById('searchResults');
+            
+            if (query.length < 2) {
+                results.innerHTML = '<p>Type at least 2 characters to search...</p>';
+                return;
+            }
+            
+            const matches = chatHistory.filter(item => 
+                item.message.toLowerCase().includes(query)
+            );
+            
+            if (matches.length === 0) {
+                results.innerHTML = '<p>No results found.</p>';
+                return;
+            }
+            
+            let html = `<p>Found ${matches.length} result(s):</p>`;
+            matches.forEach(item => {
+                const sender = item.isUser ? 'You' : 'Bot';
+                const preview = item.message.substring(0, 100) + (item.message.length > 100 ? '...' : '');
+                html += `
+                    <div class="search-result">
+                        <strong>[${item.timestamp}] ${sender}:</strong>
+                        <p>${preview}</p>
+                    </div>
+                `;
+            });
+            results.innerHTML = html;
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', () => sendMessage());
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !isTyping) {
+                sendMessage();
+            }
+        });
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('searchModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Auto-focus input
+        userInput.focus();
+
+        // Show Analytics Dashboard
+        async function showAnalytics() {
+            try {
+                const response = await fetch('/analytics');
+                const data = await response.json();
+                
+                document.getElementById('totalQueries').textContent = data.total_queries;
+                document.getElementById('avgResponseTime').textContent = (data.avg_response_time * 1000).toFixed(0) + 'ms';
+                document.getElementById('satisfactionRate').textContent = data.satisfaction_rate.toFixed(1) + '%';
+                
+                if (data.popular_topics && data.popular_topics.length > 0) {
+                    document.getElementById('popularTopic').textContent = data.popular_topics[0].topic;
+                }
+                
+                // Display sentiment bars
+                const sentimentBars = document.getElementById('sentimentBars');
+                const sentiment = data.sentiment_distribution;
+                const total = sentiment.positive + sentiment.neutral + sentiment.negative;
+                
+                if (total > 0) {
+                    sentimentBars.innerHTML = `
+                        <div class="sentiment-bar">
+                            <span class="sentiment-label">😊 Positive</span>
+                            <div class="bar-container">
+                                <div class="bar positive" style="width: ${(sentiment.positive/total*100)}%"></div>
+                            </div>
+                            <span class="sentiment-count">${sentiment.positive}</span>
+                        </div>
+                        <div class="sentiment-bar">
+                            <span class="sentiment-label">😐 Neutral</span>
+                            <div class="bar-container">
+                                <div class="bar neutral" style="width: ${(sentiment.neutral/total*100)}%"></div>
+                            </div>
+                            <span class="sentiment-count">${sentiment.neutral}</span>
+                        </div>
+                        <div class="sentiment-bar">
+                            <span class="sentiment-label">😞 Negative</span>
+                            <div class="bar-container">
+                                <div class="bar negative" style="width: ${(sentiment.negative/total*100)}%"></div>
+                            </div>
+                            <span class="sentiment-count">${sentiment.negative}</span>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('analyticsModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error fetching analytics:', error);
+            }
+        }
+
+        function closeAnalytics() {
+            document.getElementById('analyticsModal').style.display = 'none';
+        }
+
+        // Feedback System
+        function showFeedback() {
+            document.getElementById('feedbackModal').style.display = 'block';
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedbackModal').style.display = 'none';
+            currentRating = 0;
+            document.querySelectorAll('.star').forEach(star => star.classList.remove('active'));
+            document.getElementById('feedbackComment').value = '';
+        }
+
+        function setRating(rating) {
+            currentRating = rating;
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        async function submitFeedback() {
+            if (currentRating === 0) {
+                alert('Please select a rating!');
+                return;
+            }
+
+            const comment = document.getElementById('feedbackComment').value;
+            
+            try {
+                const response = await fetch('/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rating: currentRating,
+                        comment: comment
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    closeFeedback();
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                alert('Failed to submit feedback. Please try again.');
+            }
+        }
+
+        // Auto-suggestions (type-ahead)
+        userInput.addEventListener('input', function() {
+            clearTimeout(autoSuggestTimeout);
+            
+            const text = this.value.trim();
+            if (text.length >= 3) {
+                autoSuggestTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch('/suggest', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ text: text })
+                        });
+                        
+                        const data = await response.json();
+                        // Could display suggestions in a dropdown (future enhancement)
+                    } catch (error) {
+                        console.error('Error fetching suggestions:', error);
+                    }
+                }, 300);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchHistory();
+            }
+            
+            // Ctrl/Cmd + D to toggle dark mode
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                toggleDarkMode();
+            }
+            
+            // Ctrl/Cmd + E to export chat
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                exportChat();
+            }
+        });
+
+        // Show typing indicator when user is typing
+        let typingTimeout;
+        userInput.addEventListener('input', function() {
+            clearTimeout(typingTimeout);
+            // Could show "user is typing" indicator to bot
+        });
+
+        // Copy message on double-click
+        chatMessages.addEventListener('dblclick', function(e) {
+            if (e.target.closest('.message-content')) {
+                const text = e.target.closest('.message-content').textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    // Show brief notification
+                    const notification = document.createElement('div');
+                    notification.className = 'copy-notification';
+                    notification.textContent = '✓ Copied!';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                });
+            }
+        });
+
+        // Right-click context menu for messages
+        chatMessages.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('.bot-message')) {
+                e.preventDefault();
+                const message = e.target.closest('.message-content').textContent;
+                if (confirm('Bookmark this message?')) {
+                    bookmarkMessage(message);
+                }
+            }
+        });
+
+        // Quiz Functions
+        async function showQuiz() {
+            try {
+                const response = await fetch('/quiz');
+                const data = await response.json();
+                quizQuestions = data.questions;
+                quizAnswers = new Array(quizQuestions.length).fill(null);
+                
+                let html = '<div class="quiz-questions">';
+                quizQuestions.forEach((q, index) => {
+                    html += `
+                        <div class="quiz-question">
+                            <h3>Question ${index + 1}</h3>
+                            <p>${q.question}</p>
+                            <div class="quiz-options">
+                                ${q.options.map((opt, i) => `
+                                    <label class="quiz-option">
+                                        <input type="radio" name="q${index}" value="${i}" onchange="selectAnswer(${index}, ${i})">
+                                        <span>${opt}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                document.getElementById('quizContent').innerHTML = html;
+                document.getElementById('submitQuizBtn').style.display = 'block';
+                document.getElementById('quizResults').style.display = 'none';
+                document.getElementById('quizModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading quiz:', error);
+            }
+        }
+
+        function selectAnswer(questionIndex, answerIndex) {
+            quizAnswers[questionIndex] = answerIndex;
+        }
+
+        async function submitQuiz() {
+            if (quizAnswers.includes(null)) {
+                alert('Please answer all questions!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/quiz/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ answers: quizAnswers })
+                });
+                
+                const data = await response.json();
+                
+                let html = `
+                    <div class="quiz-result">
+                        <h2>🎉 Quiz Complete!</h2>
+                        <div class="score-display">
+                            <div class="score-circle">
+                                <span class="score-number">${data.score}/${data.total}</span>
+                                <span class="score-percentage">${data.percentage}%</span>
+                            </div>
+                        </div>
+                        <div class="quiz-feedback">
+                `;
+                
+                data.results.forEach((result, index) => {
+                    html += `
+                        <div class="result-item ${result.correct ? 'correct' : 'incorrect'}">
+                            <h4>${result.correct ? '✓' : '✗'} Question ${index + 1}</h4>
+                            <p>${result.question}</p>
+                            <p class="explanation">${result.explanation}</p>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                        <button class="submit-btn" onclick="closeQuiz()">Close</button>
+                    </div>
+                `;
+                
+                document.getElementById('quizContent').style.display = 'none';
+                document.getElementById('submitQuizBtn').style.display = 'none';
+                document.getElementById('quizResults').innerHTML = html;
+                document.getElementById('quizResults').style.display = 'block';
+            } catch (error) {
+                console.error('Error submitting quiz:', error);
+            }
+        }
+
+        function closeQuiz() {
+            document.getElementById('quizModal').style.display = 'none';
+        }
+
+        // Badges Functions
+        async function showBadges() {
+            try {
+                const response = await fetch('/badges');
+                const data = await response.json();
+                
+                let html = '';
+                if (data.badges.length === 0) {
+                    html = '<p class="no-badges">Start chatting to earn badges! 🏆</p>';
+                } else {
+                    data.badges.forEach(badge => {
+                        html += `
+                            <div class="badge-card">
+                                <div class="badge-icon-large">${badge.icon}</div>
+                                <h3>${badge.name}</h3>
+                                <p>${badge.description}</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('badgesContent').innerHTML = html;
+                document.getElementById('badgesModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading badges:', error);
+            }
+        }
+
+        function closeBadges() {
+            document.getElementById('badgesModal').style.display = 'none';
+        }
+
+        function showBadgeNotification(badge) {
+            const notification = document.getElementById('badgeNotification');
+            notification.querySelector('.badge-icon').textContent = badge.icon;
+            notification.querySelector('.badge-name').textContent = badge.name + ' Unlocked!';
+            notification.querySelector('.badge-desc').textContent = badge.description;
+            
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        // Bookmarks Functions
+        async function bookmarkMessage(message) {
+            try {
+                const response = await fetch('/bookmark', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    const notification = document.createElement('div');
+                    notification.className = 'copy-notification';
+                    notification.textContent = data.message;
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                }
+            } catch (error) {
+                console.error('Error bookmarking:', error);
+            }
+        }
+
+        async function showBookmarks() {
+            try {
+                const response = await fetch('/bookmarks');
+                const data = await response.json();
+                
+                let html = '';
+                if (data.bookmarks.length === 0) {
+                    html = '<p class="no-bookmarks">No bookmarks yet. Right-click on bot messages to bookmark! 📌</p>';
+                } else {
+                    data.bookmarks.forEach(bookmark => {
+                        html += `
+                            <div class="bookmark-item">
+                                <p>${bookmark.message}</p>
+                                <span class="bookmark-time">${new Date(bookmark.timestamp).toLocaleString()}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('bookmarksContent').innerHTML = html;
+                document.getElementById('bookmarksModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading bookmarks:', error);
+            }
+        }
+
+        function closeBookmarks() {
+            document.getElementById('bookmarksModal').style.display = 'none';
+        }
+
+        // Related Questions
+        function showRelatedQuestions(questions) {
+            if (questions.length === 0) return;
+            
+            const panel = document.getElementById('relatedQuestions');
+            const content = document.getElementById('relatedQuestionsContent');
+            
+            let html = '';
+            questions.forEach(q => {
+                html += `<button class="related-btn" onclick="askRelatedQuestion('${q.replace(/'/g, "\\'")}')">${q}</button>`;
+            });
+            
+            content.innerHTML = html;
+            panel.style.display = 'block';
+            
+            // Auto-hide after 20 seconds
+            setTimeout(() => {
+                panel.style.display = 'none';
+            }, 20000);
+        }
+
+        // Close related questions panel
+        function closeRelatedQuestions() {
+            document.getElementById('relatedQuestions').style.display = 'none';
+        }
+
+        // Ask related question and get automatic answer
+        async function askRelatedQuestion(question) {
+            // Hide the related questions panel immediately
+            closeRelatedQuestions();
+            
+            // Add user message
+            addMessage(question, true);
+            
+            // Show typing indicator
+            isTyping = true;
+            showTyping();
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: question })
+                });
+                
+                const data = await response.json();
+                
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                removeTyping();
+                isTyping = false;
+                
+                if (data.error) {
+                    addMessage('⚠️ Error: ' + data.error, false);
+                } else {
+                    addMessage(data.reply, false);
+                    
+                    // Update confidence display
+                    if (data.analytics && data.analytics.confidence) {
+                        const confidence = (data.analytics.confidence * 100).toFixed(0);
+                        document.getElementById('confidenceDisplay').textContent = `AI Confidence: ${confidence}%`;
+                    }
+                    
+                    // Show new related questions if any
+                    if (data.related_questions && data.related_questions.length > 0) {
+                        showRelatedQuestions(data.related_questions);
+                    }
+                    
+                    // Check for new badges
+                    if (data.badges && data.badges.length > earnedBadges.length) {
+                        const newBadges = data.badges.filter(b => 
+                            !earnedBadges.some(eb => eb.name === b.name)
+                        );
+                        newBadges.forEach(badge => showBadgeNotification(badge));
+                        earnedBadges = data.badges;
+                    }
+                }
+            } catch (error) {
+                removeTyping();
+                isTyping = false;
+                addMessage('⚠️ Error connecting to server', false);
+            }
+        }
+
+        // Message reactions
+        function addMessageReaction(messageElement, reaction) {
+            const reactionsDiv = messageElement.querySelector('.message-reactions') || document.createElement('div');
+            reactionsDiv.className = 'message-reactions';
+            
+            const reactionSpan = document.createElement('span');
+            reactionSpan.className = 'reaction';
+            reactionSpan.textContent = reaction;
+            
+            reactionsDiv.appendChild(reactionSpan);
+            messageElement.appendChild(reactionsDiv);
+        }
+    </script>
+</body>
+</html>
